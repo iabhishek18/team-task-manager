@@ -16,6 +16,7 @@ const searchRoutes = require('./routes/search');
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
 
@@ -37,7 +38,7 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/signup', authLimiter);
 
 app.use(cors({
-  origin: config.nodeEnv === 'production' ? config.clientUrl : '*',
+  origin: true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -89,59 +90,62 @@ const startServer = async () => {
 
     const { User } = require('./models');
     const { Project, TeamMember, Task } = require('./models');
+    const bcrypt = require('bcryptjs');
 
-    const alex_exists = await User.findOne({ where: { email: 'alex@taskflow.com' } });
-    if (alex_exists) {
-      const bcrypt = require('bcryptjs');
-      const valid = await bcrypt.compare('password123', alex_exists.password);
+    const alex = await User.findOne({ where: { email: 'alex@taskflow.com' } });
+    let needsSeed = false;
+
+    if (!alex) {
+      needsSeed = true;
+      console.log('Demo user alex@taskflow.com not found. Will seed.');
+    } else {
+      const valid = await bcrypt.compare('password123', alex.password);
       if (!valid) {
-        console.log('Demo users have corrupted passwords. Resetting...');
-        await Task.destroy({ where: {} });
-        await TeamMember.destroy({ where: {} });
-        await Project.destroy({ where: {} });
-        await User.destroy({ where: {} });
+        needsSeed = true;
+        console.log('Demo user password corrupted. Will re-seed.');
+        await User.destroy({ where: { email: { [require('sequelize').Op.in]: ['alex@taskflow.com', 'sarah@taskflow.com', 'mike@taskflow.com'] } } });
       }
     }
 
-    const userCount = await User.count();
-    if (userCount === 0) {
-      console.log('Seeding demo data...');
+    if (needsSeed) {
+      console.log('Seeding demo users...');
+      const alexUser = await User.create({ name: 'Alex Johnson', email: 'alex@taskflow.com', password: 'password123' });
+      const sarahUser = await User.create({ name: 'Sarah Chen', email: 'sarah@taskflow.com', password: 'password123' });
+      const mikeUser = await User.create({ name: 'Mike Peters', email: 'mike@taskflow.com', password: 'password123' });
 
-      const alex = await User.create({ name: 'Alex Johnson', email: 'alex@taskflow.com', password: 'password123' });
-      const sarah = await User.create({ name: 'Sarah Chen', email: 'sarah@taskflow.com', password: 'password123' });
-      const mike = await User.create({ name: 'Mike Peters', email: 'mike@taskflow.com', password: 'password123' });
+      const demoProject = await Project.findOne({ where: { name: 'Website Redesign' } });
+      if (!demoProject) {
+        const projects = await Project.bulkCreate([
+          { name: 'Website Redesign', description: 'Complete overhaul of company website', ownerId: alexUser.id },
+          { name: 'Mobile App v2.0', description: 'Major update to mobile application', ownerId: sarahUser.id },
+        ]);
+        const [webProject, mobileProject] = projects;
 
-      const projects = await Project.bulkCreate([
-        { name: 'Website Redesign', description: 'Complete overhaul of company website', ownerId: alex.id },
-        { name: 'Mobile App v2.0', description: 'Major update to mobile application', ownerId: sarah.id },
-      ]);
-      const [webProject, mobileProject] = projects;
+        await TeamMember.bulkCreate([
+          { projectId: webProject.id, userId: alexUser.id, role: 'admin' },
+          { projectId: webProject.id, userId: sarahUser.id, role: 'member' },
+          { projectId: webProject.id, userId: mikeUser.id, role: 'member' },
+          { projectId: mobileProject.id, userId: sarahUser.id, role: 'admin' },
+          { projectId: mobileProject.id, userId: alexUser.id, role: 'member' },
+        ]);
 
-      await TeamMember.bulkCreate([
-        { projectId: webProject.id, userId: alex.id, role: 'admin' },
-        { projectId: webProject.id, userId: sarah.id, role: 'member' },
-        { projectId: webProject.id, userId: mike.id, role: 'member' },
-        { projectId: mobileProject.id, userId: sarah.id, role: 'admin' },
-        { projectId: mobileProject.id, userId: alex.id, role: 'member' },
-      ]);
+        const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d; };
+        const daysFromNow = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
 
-      const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d; };
-      const daysFromNow = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
-
-      await Task.bulkCreate([
-        { title: 'Design homepage mockups', status: 'done', priority: 'high', dueDate: daysAgo(3), projectId: webProject.id, assigneeId: sarah.id, creatorId: alex.id },
-        { title: 'Implement responsive navigation', status: 'done', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: mike.id, creatorId: alex.id },
-        { title: 'Build contact form', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(3), projectId: webProject.id, assigneeId: mike.id, creatorId: alex.id },
-        { title: 'Set up CI/CD pipeline', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(5), projectId: webProject.id, assigneeId: alex.id, creatorId: alex.id },
-        { title: 'Write SEO meta tags', status: 'todo', priority: 'low', dueDate: daysFromNow(7), projectId: webProject.id, assigneeId: sarah.id, creatorId: alex.id },
-        { title: 'Performance audit', status: 'todo', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: alex.id, creatorId: alex.id },
-        { title: 'Push notification system', status: 'done', priority: 'high', dueDate: daysAgo(2), projectId: mobileProject.id, assigneeId: alex.id, creatorId: sarah.id },
-        { title: 'Offline data sync', status: 'in_progress', priority: 'high', dueDate: daysFromNow(4), projectId: mobileProject.id, assigneeId: sarah.id, creatorId: sarah.id },
-        { title: 'Biometric authentication', status: 'todo', priority: 'medium', dueDate: daysFromNow(6), projectId: mobileProject.id, assigneeId: alex.id, creatorId: sarah.id },
-        { title: 'App store screenshots', status: 'todo', priority: 'low', dueDate: daysFromNow(10), projectId: mobileProject.id, assigneeId: sarah.id, creatorId: sarah.id },
-      ]);
-
-      console.log('Demo data seeded: 3 users, 2 projects, 10 tasks');
+        await Task.bulkCreate([
+          { title: 'Design homepage mockups', status: 'done', priority: 'high', dueDate: daysAgo(3), projectId: webProject.id, assigneeId: sarahUser.id, creatorId: alexUser.id },
+          { title: 'Implement responsive navigation', status: 'done', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: mikeUser.id, creatorId: alexUser.id },
+          { title: 'Build contact form', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(3), projectId: webProject.id, assigneeId: mikeUser.id, creatorId: alexUser.id },
+          { title: 'Set up CI/CD pipeline', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(5), projectId: webProject.id, assigneeId: alexUser.id, creatorId: alexUser.id },
+          { title: 'Performance audit', status: 'todo', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: alexUser.id, creatorId: alexUser.id },
+          { title: 'Push notification system', status: 'done', priority: 'high', dueDate: daysAgo(2), projectId: mobileProject.id, assigneeId: alexUser.id, creatorId: sarahUser.id },
+          { title: 'Offline data sync', status: 'in_progress', priority: 'high', dueDate: daysFromNow(4), projectId: mobileProject.id, assigneeId: sarahUser.id, creatorId: sarahUser.id },
+          { title: 'Biometric authentication', status: 'todo', priority: 'medium', dueDate: daysFromNow(6), projectId: mobileProject.id, assigneeId: alexUser.id, creatorId: sarahUser.id },
+        ]);
+      }
+      console.log('Demo data seeded successfully.');
+    } else {
+      console.log('Demo users OK.');
     }
 
     app.listen(config.port, () => {
