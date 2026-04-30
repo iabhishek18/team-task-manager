@@ -61,7 +61,7 @@ export default function Layout() {
 
       <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-[220px] flex flex-col border-r transition-transform lg:translate-x-0 ${mob?'translate-x-0':'-translate-x-full'}`} style={{ background:'var(--bg-sidebar)', borderColor:'var(--border)' }}>
         <div className="h-[52px] flex items-center px-4 border-b" style={{ borderColor:'var(--border)' }}>
-          <span className="text-[15px] font-semibold" style={{ color:'var(--text)' }}>TaskFlow</span>
+          <span className="text-[15px] font-semibold" style={{ color:'var(--text)' }}>TeamSync</span>
           <button className="ml-auto lg:hidden" style={{color:'var(--text-muted)'}} onClick={() => setMob(false)}><X size={16}/></button>
         </div>
 

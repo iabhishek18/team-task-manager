@@ -1,10 +1,10 @@
-# TaskFlow — Team Task Manager
+# TeamSync — Team Task Manager
 
 A full-stack web application where users can create projects, assign tasks, and track progress with role-based access control (Admin/Member).
 
 ## Live Demo
 
-🔗 **Live URL**: [Deployed on Railway]  
+🔗 **Live URL**: [https://team-task-manager-production-3e82.up.railway.app](https://team-task-manager-production-3e82.up.railway.app)  
 📹 **Demo Video**: [Link]  
 
 ### Test Credentials
