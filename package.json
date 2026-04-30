@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Full-stack Team Task Manager with role-based access control",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "install:server": "cd server && npm install",

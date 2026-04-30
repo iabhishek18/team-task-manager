@@ -9,3 +9,6 @@ nixpkgs = ["nodejs_20", "npm-9_x"]
 startCommand = "cd server && npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
+
+[deploy.env]
+NIXPACKS_NODE_VERSION = "20"
