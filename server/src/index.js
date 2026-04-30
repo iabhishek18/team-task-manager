@@ -111,10 +111,14 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/search', searchRoutes);
 
-if (config.nodeEnv === 'production') {
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
+const clientDistPath = path.join(__dirname, '../../client/dist');
+const fs = require('fs');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(clientDistPath, 'index.html'));
+    }
   });
 }
 
