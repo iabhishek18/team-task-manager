@@ -88,19 +88,28 @@ const startServer = async () => {
     console.log('Database synced.');
 
     const { User } = require('./models');
+    const { Project, TeamMember, Task } = require('./models');
+
+    const alex_exists = await User.findOne({ where: { email: 'alex@taskflow.com' } });
+    if (alex_exists) {
+      const bcrypt = require('bcryptjs');
+      const valid = await bcrypt.compare('password123', alex_exists.password);
+      if (!valid) {
+        console.log('Demo users have corrupted passwords. Resetting...');
+        await Task.destroy({ where: {} });
+        await TeamMember.destroy({ where: {} });
+        await Project.destroy({ where: {} });
+        await User.destroy({ where: {} });
+      }
+    }
+
     const userCount = await User.count();
     if (userCount === 0) {
-      console.log('No users found. Seeding demo data...');
-      const bcrypt = require('bcryptjs');
-      const hash = await bcrypt.hash('password123', 10);
-      const { Project, TeamMember, Task } = require('./models');
+      console.log('Seeding demo data...');
 
-      const users = await User.bulkCreate([
-        { name: 'Alex Johnson', email: 'alex@taskflow.com', password: hash },
-        { name: 'Sarah Chen', email: 'sarah@taskflow.com', password: hash },
-        { name: 'Mike Peters', email: 'mike@taskflow.com', password: hash },
-      ]);
-      const [alex, sarah, mike] = users;
+      const alex = await User.create({ name: 'Alex Johnson', email: 'alex@taskflow.com', password: 'password123' });
+      const sarah = await User.create({ name: 'Sarah Chen', email: 'sarah@taskflow.com', password: 'password123' });
+      const mike = await User.create({ name: 'Mike Peters', email: 'mike@taskflow.com', password: 'password123' });
 
       const projects = await Project.bulkCreate([
         { name: 'Website Redesign', description: 'Complete overhaul of company website', ownerId: alex.id },
