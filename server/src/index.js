@@ -54,6 +54,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/reset-demo', async (req, res) => {
+  try {
+    const { User, Project, TeamMember, Task } = require('./models');
+    await User.destroy({ where: { email: ['alex@taskflow.com', 'sarah@taskflow.com', 'mike@taskflow.com'] } });
+    const alex = await User.create({ name: 'Alex Johnson', email: 'alex@taskflow.com', password: 'password123' });
+    const sarah = await User.create({ name: 'Sarah Chen', email: 'sarah@taskflow.com', password: 'password123' });
+    const mike = await User.create({ name: 'Mike Peters', email: 'mike@taskflow.com', password: 'password123' });
+    res.json({ success: true, message: 'Demo users reset. Login with alex@taskflow.com / password123' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
