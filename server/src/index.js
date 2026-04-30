@@ -87,6 +87,54 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     console.log('Database synced.');
 
+    const { User } = require('./models');
+    const userCount = await User.count();
+    if (userCount === 0) {
+      console.log('No users found. Seeding demo data...');
+      const bcrypt = require('bcryptjs');
+      const hash = await bcrypt.hash('password123', 10);
+      const { Project, TeamMember, Task } = require('./models');
+
+      const users = await User.bulkCreate([
+        { name: 'Alex Johnson', email: 'alex@taskflow.com', password: hash },
+        { name: 'Sarah Chen', email: 'sarah@taskflow.com', password: hash },
+        { name: 'Mike Peters', email: 'mike@taskflow.com', password: hash },
+      ]);
+      const [alex, sarah, mike] = users;
+
+      const projects = await Project.bulkCreate([
+        { name: 'Website Redesign', description: 'Complete overhaul of company website', ownerId: alex.id },
+        { name: 'Mobile App v2.0', description: 'Major update to mobile application', ownerId: sarah.id },
+      ]);
+      const [webProject, mobileProject] = projects;
+
+      await TeamMember.bulkCreate([
+        { projectId: webProject.id, userId: alex.id, role: 'admin' },
+        { projectId: webProject.id, userId: sarah.id, role: 'member' },
+        { projectId: webProject.id, userId: mike.id, role: 'member' },
+        { projectId: mobileProject.id, userId: sarah.id, role: 'admin' },
+        { projectId: mobileProject.id, userId: alex.id, role: 'member' },
+      ]);
+
+      const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d; };
+      const daysFromNow = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
+
+      await Task.bulkCreate([
+        { title: 'Design homepage mockups', status: 'done', priority: 'high', dueDate: daysAgo(3), projectId: webProject.id, assigneeId: sarah.id, creatorId: alex.id },
+        { title: 'Implement responsive navigation', status: 'done', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: mike.id, creatorId: alex.id },
+        { title: 'Build contact form', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(3), projectId: webProject.id, assigneeId: mike.id, creatorId: alex.id },
+        { title: 'Set up CI/CD pipeline', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(5), projectId: webProject.id, assigneeId: alex.id, creatorId: alex.id },
+        { title: 'Write SEO meta tags', status: 'todo', priority: 'low', dueDate: daysFromNow(7), projectId: webProject.id, assigneeId: sarah.id, creatorId: alex.id },
+        { title: 'Performance audit', status: 'todo', priority: 'high', dueDate: daysAgo(1), projectId: webProject.id, assigneeId: alex.id, creatorId: alex.id },
+        { title: 'Push notification system', status: 'done', priority: 'high', dueDate: daysAgo(2), projectId: mobileProject.id, assigneeId: alex.id, creatorId: sarah.id },
+        { title: 'Offline data sync', status: 'in_progress', priority: 'high', dueDate: daysFromNow(4), projectId: mobileProject.id, assigneeId: sarah.id, creatorId: sarah.id },
+        { title: 'Biometric authentication', status: 'todo', priority: 'medium', dueDate: daysFromNow(6), projectId: mobileProject.id, assigneeId: alex.id, creatorId: sarah.id },
+        { title: 'App store screenshots', status: 'todo', priority: 'low', dueDate: daysFromNow(10), projectId: mobileProject.id, assigneeId: sarah.id, creatorId: sarah.id },
+      ]);
+
+      console.log('Demo data seeded: 3 users, 2 projects, 10 tasks');
+    }
+
     app.listen(config.port, () => {
       console.log(`Server running on port ${config.port} [${config.nodeEnv}]`);
     });
