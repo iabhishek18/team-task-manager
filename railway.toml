@@ -2,6 +2,9 @@
 builder = "NIXPACKS"
 buildCommand = "npm install && cd client && npm install && npm run build && cd ../server && npm install"
 
+[build.nixpacksPlan.phases.setup]
+nixpkgs = ["nodejs_20", "npm-9_x"]
+
 [deploy]
 startCommand = "cd server && npm start"
 restartPolicyType = "ON_FAILURE"
