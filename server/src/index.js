@@ -56,12 +56,49 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/reset-demo', async (req, res) => {
   try {
-    const { User, Project, TeamMember, Task } = require('./models');
-    await User.destroy({ where: { email: ['alex@taskflow.com', 'sarah@taskflow.com', 'mike@taskflow.com'] } });
+    const { User, Project, TeamMember, Task, Activity, Comment, Notification } = require('./models');
+
+    await Comment.destroy({ where: {} });
+    await Activity.destroy({ where: {} });
+    await Notification.destroy({ where: {} });
+    await Task.destroy({ where: {} });
+    await TeamMember.destroy({ where: {} });
+    await Project.destroy({ where: {} });
+    await User.destroy({ where: {} });
+
     const alex = await User.create({ name: 'Alex Johnson', email: 'alex@taskflow.com', password: 'password123' });
     const sarah = await User.create({ name: 'Sarah Chen', email: 'sarah@taskflow.com', password: 'password123' });
     const mike = await User.create({ name: 'Mike Peters', email: 'mike@taskflow.com', password: 'password123' });
-    res.json({ success: true, message: 'Demo users reset. Login with alex@taskflow.com / password123' });
+
+    const p1 = await Project.create({ name: 'Website Redesign', description: 'Complete overhaul of company website with new branding', ownerId: alex.id });
+    const p2 = await Project.create({ name: 'Mobile App v2.0', description: 'Major update to mobile application', ownerId: sarah.id });
+
+    await TeamMember.bulkCreate([
+      { projectId: p1.id, userId: alex.id, role: 'admin' },
+      { projectId: p1.id, userId: sarah.id, role: 'member' },
+      { projectId: p1.id, userId: mike.id, role: 'member' },
+      { projectId: p2.id, userId: sarah.id, role: 'admin' },
+      { projectId: p2.id, userId: alex.id, role: 'member' },
+      { projectId: p2.id, userId: mike.id, role: 'member' },
+    ]);
+
+    const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d; };
+    const daysFromNow = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
+
+    await Task.bulkCreate([
+      { title: 'Design homepage mockups', status: 'done', priority: 'high', dueDate: daysAgo(3), projectId: p1.id, assigneeId: sarah.id, creatorId: alex.id },
+      { title: 'Implement responsive navigation', status: 'done', priority: 'high', dueDate: daysAgo(1), projectId: p1.id, assigneeId: mike.id, creatorId: alex.id },
+      { title: 'Build contact form', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(3), projectId: p1.id, assigneeId: mike.id, creatorId: alex.id },
+      { title: 'Set up CI/CD pipeline', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(5), projectId: p1.id, assigneeId: alex.id, creatorId: alex.id },
+      { title: 'Write SEO meta tags', status: 'todo', priority: 'low', dueDate: daysFromNow(7), projectId: p1.id, assigneeId: sarah.id, creatorId: alex.id },
+      { title: 'Performance audit', status: 'todo', priority: 'high', dueDate: daysAgo(1), projectId: p1.id, assigneeId: alex.id, creatorId: alex.id },
+      { title: 'Push notification system', status: 'done', priority: 'high', dueDate: daysAgo(2), projectId: p2.id, assigneeId: alex.id, creatorId: sarah.id },
+      { title: 'Offline data sync', status: 'in_progress', priority: 'high', dueDate: daysFromNow(4), projectId: p2.id, assigneeId: sarah.id, creatorId: sarah.id },
+      { title: 'Biometric authentication', status: 'todo', priority: 'medium', dueDate: daysFromNow(6), projectId: p2.id, assigneeId: mike.id, creatorId: sarah.id },
+      { title: 'App store screenshots', status: 'todo', priority: 'low', dueDate: daysFromNow(10), projectId: p2.id, assigneeId: alex.id, creatorId: sarah.id },
+    ]);
+
+    res.json({ success: true, message: 'Full demo data seeded. Login: alex@taskflow.com / password123 (also sarah@, mike@)' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
