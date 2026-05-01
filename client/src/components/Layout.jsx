@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, FolderOpen, LogOut, Menu, X, Bell, Search, Moon, Sun, Settings } from 'lucide-react';
 import Avatar from './Avatar';
+import Logo from './Logo';
 import BackgroundAnimation from './BackgroundAnimation';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
@@ -60,7 +61,8 @@ export default function Layout() {
       {mob && <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setMob(false)} />}
 
       <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-[220px] flex flex-col border-r transition-transform lg:translate-x-0 ${mob?'translate-x-0':'-translate-x-full'}`} style={{ background:'var(--bg-sidebar)', borderColor:'var(--border)' }}>
-        <div className="h-[52px] flex items-center px-4 border-b" style={{ borderColor:'var(--border)' }}>
+        <div className="h-[52px] flex items-center gap-2.5 px-4 border-b" style={{ borderColor:'var(--border)' }}>
+          <Logo size={28} />
           <span className="text-[15px] font-semibold" style={{ color:'var(--text)' }}>TeamSync</span>
           <button className="ml-auto lg:hidden" style={{color:'var(--text-muted)'}} onClick={() => setMob(false)}><X size={16}/></button>
         </div>
