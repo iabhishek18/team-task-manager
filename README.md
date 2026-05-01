@@ -214,9 +214,3 @@ The Express server serves the built React frontend in production mode.
 | Manage members | ✅ | ❌ |
 | Delete projects | ✅ | ❌ |
 | Update project settings | ✅ | ❌ |
-
-## Screenshots
-
-*Dashboard with stats, charts, and task list*  
-*Project board view with Kanban columns*  
-*Dark/Light theme support*
