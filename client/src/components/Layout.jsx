@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, FolderOpen, LogOut, Menu, X, Bell, Search, Moon, Sun, Settings } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, LogOut, Menu, X, Bell, Search, Moon, Sun, Settings, ArrowLeft } from 'lucide-react';
 import Avatar from './Avatar';
 import Logo from './Logo';
 import BackgroundAnimation from './BackgroundAnimation';
@@ -136,7 +136,10 @@ export default function Layout() {
               <AnimatePresence>{showN && (
                 <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0,y:4}} transition={{duration:0.1}} className="absolute right-0 top-11 w-[320px] rounded-lg overflow-hidden z-50" style={{ background:'var(--bg)', border:'1px solid var(--border)', boxShadow:'var(--shadow-md)' }}>
                   <div className="px-3 py-2.5 border-b flex items-center justify-between" style={{borderColor:'var(--border)'}}>
-                    <span className="text-[13px] font-semibold" style={{color:'var(--text)'}}>Notifications</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowN(false)} className="p-0.5 rounded-md transition-colors" style={{color:'var(--text-muted)'}} onMouseEnter={e=>e.currentTarget.style.color='var(--text)'} onMouseLeave={e=>e.currentTarget.style.color='var(--text-muted)'}><ArrowLeft size={15}/></button>
+                      <span className="text-[13px] font-semibold" style={{color:'var(--text)'}}>Notifications</span>
+                    </div>
                     {unread>0 && <button onClick={()=>{api.patch('/notifications/all/read');setUnread(0);setNotifs(p=>p.map(n=>({...n,read:true})));}} className="text-[11px] text-brand font-medium">Mark all read</button>}
                   </div>
                   <div className="max-h-[300px] overflow-auto">{notifs.length===0 ? <p className="py-8 text-center text-[12px]" style={{color:'var(--text-muted)'}}>No notifications</p> : notifs.map(n => (

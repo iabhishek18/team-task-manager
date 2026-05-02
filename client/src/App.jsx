@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import CustomToaster from './components/CustomToaster';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
@@ -38,7 +38,7 @@ export default function App() {
               <Route path="profile" element={<Profile />} />
             </Route>
           </Routes>
-          <Toaster position="bottom-center" toastOptions={{ duration: 3000, style: { background:'var(--bg)', color:'var(--text)', border:'1px solid var(--border)', fontSize:'13px', padding:'10px 16px', borderRadius:'8px', boxShadow:'var(--shadow-md)', maxWidth:'360px' } }} />
+          <CustomToaster />
         </Router>
       </AuthProvider>
     </ThemeProvider>

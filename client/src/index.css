@@ -91,6 +91,10 @@ input:focus, select:focus, textarea:focus {
 input::placeholder, textarea::placeholder { color: var(--text-placeholder); }
 textarea { height: auto; padding: 10px 12px; }
 select { cursor: pointer; }
+select option {
+  background: var(--bg);
+  color: var(--text);
+}
 
 button { cursor: pointer; }
 .btn-primary {
