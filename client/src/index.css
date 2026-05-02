@@ -168,11 +168,11 @@ button { cursor: pointer; }
 }
 
 @keyframes toast-slide-in {
-  from { transform: translateX(-120%); opacity: 0; }
+  from { transform: translateX(120%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes toast-slide-out {
   from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(-120%); opacity: 0; }
+  to { transform: translateX(120%); opacity: 0; }
 }

@@ -16,7 +16,7 @@ export default function CustomToaster() {
 
   return (
     <Toaster
-      position="bottom-left"
+      position="bottom-right"
       toastOptions={{
         duration: 2500,
         style: {
@@ -30,7 +30,7 @@ export default function CustomToaster() {
           maxWidth: '360px',
         },
       }}
-      containerStyle={{ bottom: 24, left: 24 }}
+      containerStyle={{ bottom: 24, right: 24 }}
     >
       {(t) => (
         <ToastBar toast={t} style={{ ...t.style, animation: t.visible ? 'toast-slide-in 0.3s ease forwards' : 'toast-slide-out 0.2s ease forwards' }}>
