@@ -202,8 +202,9 @@ const startServer = async () => {
       console.log('Demo users OK.');
     }
 
-    app.listen(config.port, () => {
-      console.log(`Server running on port ${config.port} [${config.nodeEnv}]`);
+    const host = '0.0.0.0';
+    app.listen(config.port, host, () => {
+      console.log(`Server running on ${host}:${config.port} [${config.nodeEnv}]`);
     });
   } catch (error) {
     console.error('Unable to start server:', error);
